@@ -1,0 +1,2296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MaticWorld - The Ultimate NFT Universe</title>
+  <script src="https://cdn.jsdelivr.net/npm/react@18.2.0/umd/react.development.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/react-dom@18.2.0/umd/react-dom.development.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@babel/standalone@7.22.5/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios@1.4.0/dist/axios.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      background: linear-gradient(135deg, #1a0033 0%, #330066 50%, #660099 100%);
+      min-height: 100vh;
+      overflow-x: hidden;
+      font-family: 'Arial', sans-serif;
+    }
+    .neon-glow {
+      box-shadow: 0 0 10px #ff00ff, 0 0 20px #00ffff, 0 0 30px #ff00ff;
+    }
+    .cosmic-bg {
+      background: url('https://images.unsplash.com/photo-1447433589677-144b1d0672f3?ixlib=rb-4.0.3&auto=format&fit=crop&w=1350&q=80') no-repeat center center;
+      background-size: cover;
+      opacity: 0.2;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1;
+    }
+    .mining-spinner {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #ff00ff;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+  </style>
+</head>
+<body className="relative text-white">
+  <div className="cosmic-bg"></div>
+  <div id="root" className="container mx-auto p-6"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    const contractABI = [
+      {
+        "inputs": [],
+        "name": "AlreadyStaked",
+        "type": "error"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "to",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "tokenId",
+            "type": "uint256"
+          }
+        ],
+        "name": "approve",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "CannotReferSelf",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "ERC721EnumerableForbiddenBatchMint",
+        "type": "error"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "tokenId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
+          }
+        ],
+        "name": "ERC721IncorrectOwner",
+        "type": "error"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "operator",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "tokenId",
+            "type": "uint256"
+          }
+        ],
+        "name": "ERC721InsufficientApproval",
+        "type": "error"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "approver",
+            "type": "address"
+          }
+        ],
+        "name": "ERC721InvalidApprover",
+        "type": "error"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "operator",
+            "type": "address"
+          }
+        ],
+        "name": "ERC721InvalidOperator",
+        "type": "error"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
+          }
+        ],
+        "name": "ERC721InvalidOwner",
+        "type": "error"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "receiver",
+            "type": "address"
+          }
+        ],
+        "name": "ERC721InvalidReceiver",
+        "type": "error"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "sender",
+            "type": "address"
+          }
+        ],
+        "name": "ERC721InvalidSender",
+        "type": "error"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "tokenId",
+            "type": "uint256"
+          }
+        ],
+        "name": "ERC721NonexistentToken",
+        "type": "error"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "index",
+            "type": "uint256"
+          }
+        ],
+        "name": "ERC721OutOfBoundsIndex",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "InsufficientBalance",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "InsufficientMATIC",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "InsufficientNFTsForTier",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "InsufficientReferrals",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "InvalidCount",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "InvalidInitialization",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "InvalidMiningLevel",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "InvalidMiningUpgrade",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "InvalidNFTType",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "InvalidPercent",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "InvalidReferrer",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "InvalidURI",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "LockPeriodNotOver",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "MaxLevelReached",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "MinimumDepositNotMet",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "NoBalance",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "NoFundsSent",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "NoRewards",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "NotEnoughEntries",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "NotEnoughWinners",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "NotInitializing",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "NotTokenOwner",
+        "type": "error"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
+          }
+        ],
+        "name": "OwnableInvalidOwner",
+        "type": "error"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "account",
+            "type": "address"
+          }
+        ],
+        "name": "OwnableUnauthorizedAccount",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "PrizeTooSmall",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "ReferrerAlreadySet",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "TokenDoesNotExist",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "TokenURINotApproved",
+        "type": "error"
+      },
+      {
+        "inputs": [],
+        "name": "TransferFailed",
+        "type": "error"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "approved",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "uint256",
+            "name": "tokenId",
+            "type": "uint256"
+          }
+        ],
+        "name": "Approval",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "operator",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "bool",
+            "name": "approved",
+            "type": "bool"
+          }
+        ],
+        "name": "ApprovalForAll",
+        "type": "event"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "_tokenId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bool",
+            "name": "_approved",
+            "type": "bool"
+          }
+        ],
+        "name": "approveTokenURI",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "_fromTokenId",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "_toTokenId",
+            "type": "uint256"
+          }
+        ],
+        "name": "BatchMetadataUpdate",
+        "type": "event"
+      },
+      {
+        "inputs": [
+          {
+            "inputType": "enum MaticWorld.JackpotType",
+            "name": "_type",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_entries",
+            "type": "uint256"
+          }
+        ],
+        "name": "buyJackpotEntries",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "enum MaticWorld.LotteryType",
+            "name": "_type",
+            "type": "uint8"
+          },
+          {
+            "internalType": "uint256",
+            "name": "_entries",
+            "type": "uint256"
+          }
+        ],
+        "name": "buyLotteryEntries",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "claimMiningRewards",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "claimStakeRewards",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "_amount",
+            "type": "uint256"
+          }
+        ],
+        "name": "depositStarVault",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "enum MaticWorld.JackpotType",
+            "name": "_type",
+            "type": "uint8"
+          }
+        ],
+        "name": "distributeJackpotRewards",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "enum MaticWorld.LotteryType",
+            "name": "_type",
+            "type": "uint8"
+          }
+        ],
+        "name": "distributeLotteryRewards",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "fundContract",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "initialize",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "uint64",
+            "name": "version",
+            "type": "uint64"
+          }
+        ],
+        "name": "Initialized",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "user",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "enum MaticWorld.JackpotType",
+            "name": "jackpotType",
+            "type": "uint8"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "entries",
+            "type": "uint256"
+          }
+        ],
+        "name": "JackpotEntriesBought",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "address[]",
+            "name": "winners",
+            "type": "address[]"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "amountPerWinner",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "ownerShare",
+            "type": "uint256"
+          }
+        ],
+        "name": "JackpotRewardsDistributed",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "user",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "enum MaticWorld.LotteryType",
+            "name": "lotteryType",
+            "type": "uint8"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "entries",
+            "type": "uint256"
+          }
+        ],
+        "name": "LotteryEntriesBought",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "address[]",
+            "name": "winners",
+            "type": "address[]"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "amountPerWinner",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "ownerShare",
+            "type": "uint256"
+          }
+        ],
+        "name": "LotteryRewardsDistributed",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "_tokenId",
+            "type": "uint256"
+          }
+        ],
+        "name": "MetadataUpdate",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "user",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "name": "MiningRewardsClaimed",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "user",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "level",
+            "type": "uint256"
+          }
+        ],
+        "name": "MiningStarted",
+        "type": "event"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "enum MaticWorld.NFTType",
+            "name": "_type",
+            "type": "uint8"
+          },
+          {
+            "internalType": "address",
+            "name": "_referrer",
+            "type": "address"
+          },
+          {
+            "internalType": "string",
+            "name": "_tokenURI",
+            "type": "string"
+          }
+        ],
+        "name": "mintNFT",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "user",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "tokenId",
+            "type": "uint256"
+          },
+          {
+            "indexed": false,
+            "internalType": "enum MaticWorld.NFTType",
+            "name": "nftType",
+            "type": "uint8"
+          }
+        ],
+        "name": "NFTMinted",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "user",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "tokenId",
+            "type": "uint256"
+          }
+        ],
+        "name": "NFTStaked",
+        "type": "event"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "enum MaticWorld.NFTType",
+            "name": "_type",
+            "type": "uint8"
+          },
+          {
+            "internalType": "string",
+            "name": "_tokenURI",
+            "type": "string"
+          }
+        ],
+        "name": "ownerMintNFT",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "previousOwner",
+            "type": "address"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "newOwner",
+            "type": "address"
+          }
+        ],
+        "name": "OwnershipTransferred",
+        "type": "event"
+      },
+      {
+        "inputs": [],
+        "name": "pause",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": false,
+            "internalType": "address",
+            "name": "account",
+            "type": "address"
+          }
+        ],
+        "name": "Paused",
+        "type": "event"
+      },
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "user",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+          }
+        ],
+        "name": "ReferralRewardsDistributed",
+        "type": "event"
+      },
+      {
+        "inputs": [],
+        "name": "renounceOwnership",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "from",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "to",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "tokenId",
+            "type": "uint256"
+          }
+        ],
+        "name": "safeTransferFrom",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "from",
+            "type": "address"
+          },
+          {
+            "internalType": "address",
+            "name": "to",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "tokenId",
+            "type": "uint256"
+          },
+          {
+            "internalType": "bytes",
+            "name": "data",
+            "type": "bytes"
+          }
+        ],
+        "name": "safeTransferFrom",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "operator",
+            "type": "address"
+          },
+          {
+            "internalType": "bool",
+            "name": "approved",
+            "type": "bool"
+          }
+        ],
+        "name": "setApprovalForAll",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "_tokenId",
+            "type": "uint256"
+          }
+        ],
+        "name": "stakeNFT",
+        "outputsentricularType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "LOTTERY_FEE_BASIC",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "LOTTERY_FEE_ELITE",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "LOTTERY_FEE_PRO",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+          },
+          {
+            "internalType": "enum MaticWorld.LotteryType",
+            "name": "",
+            "type": "uint8"
+          }
+        ],
+        "name": "lotteryEntries",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "lotteryWinnersCount",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "MAX_TIER_LEVEL",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "MINING_CLAIM_FEE",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "name": "miningRates",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "mintedNFTsCount",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "MINTING_FEE_GOLD",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "MINTING_FEE_PREMIUM",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "MINTING_FEE_STANDARD",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "enum MaticWorld.NFTType",
+            "name": "",
+            "type": "uint8"
+          }
+        ],
+        "name": "mintingFees",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "name",
+        "outputs": [
+          {
+            "internalType": "string",
+            "name": "",
+            "type": "string"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "owner",
+        "outputs": [
+          {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "tokenId",
+            "type": "uint256"
+          }
+        ],
+        "name": "ownerOf",
+        "outputs": [
+          {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "ownerSharePercent",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "paused",
+        "outputs": [
+          {
+            "internalType": "bool",
+            "name": "",
+            "type": "bool"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "enum MaticWorld.NFTType",
+            "name": "",
+            "type": "uint8"
+          }
+        ],
+        "name": "periodicRewardRates",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "prizePoolPercent",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+          }
+        ],
+        "name": "referredCount",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "STAKE_CLAIM_FEE",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "enum MaticWorld.NFTType",
+            "name": "",
+            "type": "uint8"
+          }
+        ],
+        "name": "stakeRewardRates",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "name": "stakeStartTimes",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "name": "starVaultProfits",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "bytes4",
+            "name": "interfaceId",
+            "type": "bytes4"
+          }
+        ],
+        "name": "supportsInterface",
+        "outputs": [
+          {
+            "internalType": "bool",
+            "name": "",
+            "type": "bool"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "symbol",
+        "outputs": [
+          {
+            "internalType": "string",
+            "name": "",
+            "type": "string"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "index",
+            "type": "uint256"
+          }
+        ],
+        "name": "tokenByIndex",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "owner",
+            "type": "address"
+          },
+          {
+            "internalType": "uint256",
+            "name": "index",
+            "type": "uint256"
+          }
+        ],
+        "name": "tokenOfOwnerByIndex",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "name": "tokenTypes",
+        "outputs": [
+          {
+            "internalType": "enum MaticWorld.NFTType",
+            "name": "",
+            "type": "uint8"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "tokenId",
+            "type": "uint256"
+          }
+        ],
+        "name": "tokenURI",
+        "outputs": [
+          {
+            "internalType": "string",
+            "name": "",
+            "type": "string"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "name": "tokenURIApproved",
+        "outputs": [
+          {
+            "internalType": "bool",
+            "name": "",
+            "type": "bool"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [],
+        "name": "totalSupply",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+          }
+        ],
+        "name": "userData",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "stakeStartTime",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "claimedStakeRewards",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "miningLevel",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "miningStartTime",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "claimedMiningRewards",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "starVaultBalance",
+            "type": "uint256"
+          },
+          {
+            "internalType": "uint256",
+            "name": "starVaultStartTime",
+            "type": "uint256"
+          },
+          {
+            "internalType": "address",
+            "name": "referrer",
+            "type": "address"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+          }
+        ],
+        "name": "userMintedNFTs",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+          },
+          {
+            "internalType": "enum MaticWorld.NFTType",
+            "name": "",
+            "type": "uint8"
+          }
+        ],
+        "name": "userMintedNFTsByTier",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+          },
+          {
+            "internalType": "enum MaticWorld.NFTType",
+            "name": "",
+            "type": "uint8"
+          }
+        ],
+        "name": "userTierLevel",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      }
+    ];
+
+    const contractAddress = "0x34ced6f0d241212b2f0258e9bfbf809febcca572";
+    const sepoliaChainId = "11155111"; // Sepolia chain ID
+
+    const App = () => {
+      const [account, setAccount] = useState(null);
+      const [contract, setContract] = useState(null);
+      const [nfts, setNfts] = useState([]);
+      const [name, setName] = useState("");
+      const [description, setDescription] = useState("");
+      const [image, setImage] = useState(null);
+      const [loading, setLoading] = useState(false);
+      const [error, setError] = useState("");
+      const [miningLevel, setMiningLevel] = useState(0);
+      const [miningRewards, setMiningRewards] = useState("0");
+      const [isMining, setIsMining] = useState(false);
+      const [targetLevel, setTargetLevel] = useState("");
+      const [stakeTokenId, setStakeTokenId] = useState("");
+      const [stakeRewards, setStakeRewards] = useState("0");
+      const [jackpotType, setJackpotType] = useState(0);
+      const [jackpotEntries, setJackpotEntries] = useState("");
+      const [lotteryType, setLotteryType] = useState(0);
+      const [lotteryEntries, setLotteryEntries] = useState("");
+      const [vaultAmount, setVaultAmount] = useState("");
+      const [vaultBalance, setVaultBalance] = useState("0");
+      const [vaultProfits, setVaultProfits] = useState("0");
+
+      // Connect to MetaMask
+      const connectWallet = async () => {
+        if (window.ethereum) {
+          try {
+            const accounts = await window.ethereum.request({ method: "eth_requestAccounts" });
+            setAccount(accounts[0]);
+
+            // Switch to Sepolia network
+            await window.ethereum.request({
+              method: "wallet_switchEthereumChain",
+              params: [{ chainId: `0x${parseInt(sepoliaChainId).toString(16)}` }],
+            });
+
+            const provider = new ethers.providers.Web3Provider(window.ethereum);
+            const signer = provider.getSigner();
+            const contractInstance = new ethers.Contract(contractAddress, contractABI, signer);
+            setContract(contractInstance);
+
+            // Fetch user's NFTs and other data
+            fetchUserNFTs(accounts[0], contractInstance);
+            fetchUserData(accounts[0], contractInstance);
+          } catch (err) {
+            setError("Failed to connect wallet: " + err.message);
+          }
+        } else {
+          setError("Please install MetaMask!");
+        }
+      };
+
+      // Fetch user's NFTs
+      const fetchUserNFTs = async (userAddress, contractInstance) => {
+        try {
+          const balance = await contractInstance.balanceOf(userAddress);
+          const userNFTs = [];
+          for (let i = 0; i < balance; i++) {
+            const tokenId = await contractInstance.tokenOfOwnerByIndex(userAddress, i);
+            const tokenURI = await contractInstance.tokenURI(tokenId);
+            const response = await axios.get(tokenURI.replace("ipfs://", "https://ipfs.io/ipfs/"));
+            userNFTs.push({
+              tokenId: tokenId.toString(),
+              metadata: response.data,
+            });
+          }
+          setNfts(userNFTs);
+        } catch (err) {
+          setError("Failed to fetch NFTs: " + err.message);
+        }
+      };
+
+      // Fetch user data (mining, staking, vault)
+      const fetchUserData = async (userAddress, contractInstance) => {
+        try {
+          const userData = await contractInstance.userData(userAddress);
+          setMiningLevel(userData.miningLevel.toString());
+          setIsMining(userData.miningStartTime > 0);
+
+          const miningRewards = await contractInstance.getPendingMiningRewards(userAddress);
+          setMiningRewards(ethers.utils.formatEther(miningRewards));
+
+          const stakeRewards = await contractInstance.getPendingStakeRewards(userAddress);
+          setStakeRewards(ethers.utils.formatEther(stakeRewards));
+
+          setVaultBalance(ethers.utils.formatEther(userData.starVaultBalance));
+          const vaultProfits = await contractInstance.getPendingStarVaultProfits(userAddress);
+          setVaultProfits(ethers.utils.formatEther(vaultProfits));
+        } catch (err) {
+          setError("Failed to fetch user data: " + err.message);
+        }
+      };
+
+      // Upload to Pinata
+      const uploadToPinata = async (file, isImage = true) => {
+        const PINATA_API_KEY = "923babd3687ae1b8c3c0";
+        const PINATA_API_SECRET = "045cb77f43566f7ccf2dc4a291e54c39dc98f41a4b999bf3584ff429d16c5398";
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        try {
+          const response = await axios.post("https://api.pinata.cloud/pinning/pinFileToIPFS", formData, {
+            headers: {
+              "pinata_api_key": PINATA_API_KEY,
+              "pinata_api_secret": PINATA_API_SECRET,
+              "Content-Type": "multipart/form-data",
+            },
+          });
+          return `ipfs://${response.data.IpfsHash}`;
+        } catch (err) {
+          throw new Error("Pinata upload failed: " + err.message);
+        }
+      };
+
+      // Handle Minting NFT
+      const mintNFT = async () => {
+        if (!contract || !account) {
+          setError("Please connect your wallet!");
+          return;
+        }
+        if (!name || !description || !image) {
+          setError("Please fill all fields and upload an image!");
+          return;
+        }
+
+        setLoading(true);
+        setError("");
+        try {
+          // Upload image to Pinata
+          const imageIpfsUrl = await uploadToPinata(image);
+
+          // Create metadata
+          const metadata = {
+            name: name,
+            description: description,
+            image: imageIpfsUrl,
+            attributes: [
+              { trait_type: "Background", value: "Cosmic" },
+              { trait_type: "Color", value: "Neon Green" },
+            ],
+          };
+
+          // Upload metadata to Pinata
+          const metadataBlob = new Blob([JSON.stringify(metadata)], { type: "application/json" });
+          const metadataFile = new File([metadataBlob], "metadata.json", { type: "application/json" });
+          const metadataIpfsUrl = await uploadToPinata(metadataFile, false);
+
+          // Mint NFT using ownerMintNFT
+          const tx = await contract.ownerMintNFT(0, metadataIpfsUrl);
+          await tx.wait();
+
+          // Refresh NFTs
+          fetchUserNFTs(account, contract);
+
+          alert("NFT Minted Successfully!");
+          setName("");
+          setDescription("");
+          setImage(null);
+        } catch (err) {
+          setError("Minting failed: " + err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      // Start or Upgrade Mining
+      const startOrUpgradeMining = async () => {
+        if (!contract || !account) {
+          setError("Please connect your wallet!");
+          return;
+        }
+        if (!targetLevel) {
+          setError("Please enter a target level!");
+          return;
+        }
+
+        setLoading(true);
+        setError("");
+        try {
+          const tx = await contract.startOrUpgradeMining(targetLevel, { value: ethers.utils.parseEther("0.01") });
+          await tx.wait();
+          fetchUserData(account, contract);
+          alert("Mining Started/Upgraded Successfully!");
+          setTargetLevel("");
+        } catch (err) {
+          setError("Mining failed: " + err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      // Claim Mining Rewards
+      const claimMiningRewards = async () => {
+        if (!contract || !account) {
+          setError("Please connect your wallet!");
+          return;
+        }
+
+        setLoading(true);
+        setError("");
+        try {
+          const tx = await contract.claimMiningRewards({ value: ethers.utils.parseEther("0.001") });
+          await tx.wait();
+          fetchUserData(account, contract);
+          alert("Mining Rewards Claimed Successfully!");
+        } catch (err) {
+          setError("Claim failed: " + err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      // Stake NFT
+      const stakeNFT = async () => {
+        if (!contract || !account) {
+          setError("Please connect your wallet!");
+          return;
+        }
+        if (!stakeTokenId) {
+          setError("Please enter a token ID to stake!");
+          return;
+        }
+
+        setLoading(true);
+        setError("");
+        try {
+          const tx = await contract.stakeNFT(stakeTokenId);
+          await tx.wait();
+          fetchUserData(account, contract);
+          alert("NFT Staked Successfully!");
+          setStakeTokenId("");
+        } catch (err) {
+          setError("Staking failed: " + err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      // Claim Stake Rewards
+      const claimStakeRewards = async () => {
+        if (!contract || !account) {
+          setError("Please connect your wallet!");
+          return;
+        }
+
+        setLoading(true);
+        setError("");
+        try {
+          const tx = await contract.claimStakeRewards({ value: ethers.utils.parseEther("0.001") });
+          await tx.wait();
+          fetchUserData(account, contract);
+          alert("Stake Rewards Claimed Successfully!");
+        } catch (err) {
+          setError("Claim failed: " + err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      // Buy Jackpot Entries
+      const buyJackpotEntries = async () => {
+        if (!contract || !account) {
+          setError("Please connect your wallet!");
+          return;
+        }
+        if (!jackpotEntries) {
+          setError("Please enter the number of entries!");
+          return;
+        }
+
+        setLoading(true);
+        setError("");
+        try {
+          const fee = await contract.JACKPOT_FEE_BASIC();
+          const totalCost = fee.mul(jackpotEntries);
+          const tx = await contract.buyJackpotEntries(jackpotType, jackpotEntries, { value: totalCost });
+          await tx.wait();
+          alert("Jackpot Entries Bought Successfully!");
+          setJackpotEntries("");
+        } catch (err) {
+          setError("Failed to buy jackpot entries: " + err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      // Distribute Jackpot Rewards
+      const distributeJackpotRewards = async () => {
+        if (!contract || !account) {
+          setError("Please connect your wallet!");
+          return;
+        }
+
+        setLoading(true);
+        setError("");
+        try {
+          const tx = await contract.distributeJackpotRewards(jackpotType);
+          await tx.wait();
+          alert("Jackpot Rewards Distributed Successfully!");
+        } catch (err) {
+          setError("Distribution failed: " + err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      // Buy Lottery Entries
+      const buyLotteryEntries = async () => {
+        if (!contract || !account) {
+          setError("Please connect your wallet!");
+          return;
+        }
+        if (!lotteryEntries) {
+          setError("Please enter the number of entries!");
+          return;
+        }
+
+        setLoading(true);
+        setError("");
+        try {
+          const fee = await contract.LOTTERY_FEE_BASIC();
+          const totalCost = fee.mul(lotteryEntries);
+          const tx = await contract.buyLotteryEntries(lotteryType, lotteryEntries, { value: totalCost });
+          await tx.wait();
+          alert("Lottery Entries Bought Successfully!");
+          setLotteryEntries("");
+        } catch (err) {
+          setError("Failed to buy lottery entries: " + err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      // Distribute Lottery Rewards
+      const distributeLotteryRewards = async () => {
+        if (!contract || !account) {
+          setError("Please connect your wallet!");
+          return;
+        }
+
+        setLoading(true);
+        setError("");
+        try {
+          const tx = await contract.distributeLotteryRewards(lotteryType);
+          await tx.wait();
+          alert("Lottery Rewards Distributed Successfully!");
+        } catch (err) {
+          setError("Distribution failed: " + err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      // Deposit to Star Vault
+      const depositStarVault = async () => {
+        if (!contract || !account) {
+          setError("Please connect your wallet!");
+          return;
+        }
+        if (!vaultAmount) {
+          setError("Please enter an amount to deposit!");
+          return;
+        }
+
+        setLoading(true);
+        setError("");
+        try {
+          const amount = ethers.utils.parseEther(vaultAmount);
+          const tx = await contract.depositStarVault(amount, { value: amount });
+          await tx.wait();
+          fetchUserData(account, contract);
+          alert("Deposited to Star Vault Successfully!");
+          setVaultAmount("");
+        } catch (err) {
+          setError("Deposit failed: " + err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      // Withdraw from Star Vault
+      const withdrawStarVault = async () => {
+        if (!contract || !account) {
+          setError("Please connect your wallet!");
+          return;
+        }
+
+        setLoading(true);
+        setError("");
+        try {
+          const tx = await contract.withdrawStarVault();
+          await tx.wait();
+          fetchUserData(account, contract);
+          alert("Withdrawn from Star Vault Successfully!");
+        } catch (err) {
+          setError("Withdrawal failed: " + err.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      // Handle Image Upload
+      const handleImageChange = (e) => {
+        setImage(e.target.files[0]);
+      };
+
+      return (
+        <div className="space-y-12">
+          {/* Header */}
+          <header className="text-center">
+            <h1 className="text-6xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-pink-500 to-cyan-500 animate-pulse">
+              🌌 MaticWorld
+            </h1>
+            <p className="text-xl mt-2 text-gray-300">The Ultimate NFT Universe on Polygon</p>
+            {!account ? (
+              <button
+                onClick={connectWallet}
+                className="mt-4 px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 rounded-lg text-white neon-glow hover:from-purple-700 hover:to-pink-700 transition-all"
+              >
+                Connect Wallet
+              </button>
+            ) : (
+              <p className="mt-4 text-sm text-gray-300">
+                Connected: {account.slice(0, 6)}...{account.slice(-4)}
+              </p>
+            )}
+          </header>
+
+          {/* Error Message */}
+          {error && (
+            <div className="bg-red-500 text-white p-4 rounded-lg text-center">
+              {error}
+            </div>
+          )}
+
+          {account && (
+            <>
+              {/* Mint NFT Section */}
+              <section className="bg-gray-900 bg-opacity-80 p-6 rounded-lg neon-glow">
+                <h2 className="text-3xl font-bold text-center mb-6 bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 to-pink-500">
+                  Mint Your NFT 🚀
+                </h2>
+                <div className="space-y-4">
+                  <input
+                    type="text"
+                    placeholder="NFT Name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    className="w-full p-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-cyan-500"
+                  />
+                  <textarea
+                    placeholder="NFT Description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    className="w-full p-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-cyan-500"
+                  />
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageChange}
+                    className="w-full p-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-cyan-500"
+                  />
+                  <button
+                    onClick={mintNFT}
+                    disabled={loading}
+                    className="w-full px-6 py-3 bg-gradient-to-r from-cyan-500 to-purple-500 rounded-lg text-white neon-glow hover:from-cyan-600 hover:to-purple-600 transition-all disabled:opacity-50"
+                  >
+                    {loading ? "Minting..." : "Mint NFT"}
+                  </button>
+                </div>
+              </section>
+
+              {/* Mining Section */}
+              <section className="bg-gray-900 bg-opacity-80 p-6 rounded-lg neon-glow">
+                <h2 className="text-3xl font-bold text-center mb-6 bg-clip-text text-transparent bg-gradient-to-r from-green-400 to-blue-500">
+                  Mining Center ⛏️
+                </h2>
+                <div className="space-y-4">
+                  <p className="text-center text-lg">Current Mining Level: {miningLevel}</p>
+                  <p className="text-center text-lg">Pending Rewards: {miningRewards} MATIC</p>
+                  {isMining && <div className="mining-spinner"></div>}
+                  <input
+                    type="number"
+                    placeholder="Target Mining Level"
+                    value={targetLevel}
+                    onChange={(e) => setTargetLevel(e.target.value)}
+                    className="w-full p-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-cyan-500"
+                  />
+                  <button
+                    onClick={startOrUpgradeMining}
+                    disabled={loading}
+                    className="w-full px-6 py-3 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg text-white neon-glow hover:from-green-600 hover:to-blue-600 transition-all disabled:opacity-50"
+                  >
+                    {loading ? "Processing..." : "Start/Upgrade Mining"}
+                  </button>
+                  <button
+                    onClick={claimMiningRewards}
+                    disabled={loading || miningRewards === "0"}
+                    className="w-full px-6 py-3 bg-gradient-to-r from-blue-500 to-green-500 rounded-lg text-white neon-glow hover:from-blue-600 hover:to-green-600 transition-all disabled:opacity-50"
+                  >
+                    {loading ? "Claiming..." : "Claim Mining Rewards"}
+                  </button>
+                </div>
+              </section>
+
+              {/* Staking Section */}
+              <section className="bg-gray-900 bg-opacity-80 p-6 rounded-lg neon-glow">
+                <h2 className="text-3xl font-bold text-center mb-6 bg-clip-text text-transparent bg-gradient-to-r from-purple-400 to-pink-500">
+                  Staking Hub 🏦
+                </h2>
+                <div className="space-y-4">
+                  <p className="text-center text-lg">Pending Stake Rewards: {stakeRewards} MATIC</p>
+                  <input
+                    type="number"
+                    placeholder="Token ID to Stake"
+                    value={stakeTokenId}
+                    onChange={(e) => setStakeTokenId(e.target.value)}
+                    className="w-full p-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-cyan-500"
+                  />
+                  <button
+                    onClick={stakeNFT}
+                    disabled={loading}
+                    className="w-full px-6 py-3 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg text-white neon-glow hover:from-purple-600 hover:to-pink-600 transition-all disabled:opacity-50"
+                  >
+                    {loading ? "Staking..." : "Stake NFT"}
+                  </button>
+                  <button
+                    onClick={claimStakeRewards}
+                    disabled={loading || stakeRewards === "0"}
+                    className="w-full px-6 py-3 bg-gradient-to-r from-pink-500 to-purple-500 rounded-lg text-white neon-glow hover:from-pink-600 hover:to-purple-600 transition-all disabled:opacity-50"
+                  >
+                    {loading ? "Claiming..." : "Claim Stake Rewards"}
+                  </button>
+                </div>
+              </section>
+
+              {/* Jackpot Section */}
+              <section className="bg-gray-900 bg-opacity-80 p-6 rounded-lg neon-glow">
+                <h2 className="text-3xl font-bold text-center mb-6 bg-clip-text text-transparent bg-gradient-to-r from-yellow-500 to-orange-500">
+                  Jackpot Arena 🎰
+                </h2>
+                <div className="space-y-4">
+                  <select
+                    value={jackpotType}
+                    onChange={(e) => setJackpotType(Number(e.target.value))}
+                    className="w-full p-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-cyan-500"
+                  >
+                    <option value={0}>Basic Jackpot</option>
+                    <option value={1}>Pro Jackpot</option>
+                    <option value={2}>Elite Jackpot</option>
+                  </select>
+                  <input
+                    type="number"
+                    placeholder="Number of Entries"
+                    value={jackpotEntries}
+                    onChange={(e) => setJackpotEntries(e.target.value)}
+                    className="w-full p-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-cyan-500"
+                  />
+                  <button
+                    onClick={buyJackpotEntries}
+                    disabled={loading}
+                    className="w-full px-6 py-3 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-lg text-white neon-glow hover:from-yellow-600 hover:to-orange-600 transition-all disabled:opacity-50"
+                  >
+                    {loading ? "Buying..." : "Buy Jackpot Entries"}
+                  </button>
+                  <button
+                    onClick={distributeJackpotRewards}
+                    disabled={loading}
+                    className="w-full px-6 py-3 bg-gradient-to-r from-orange-500 to-yellow-500 rounded-lg text-white neon-glow hover:from-orange-600 hover:to-yellow-600 transition-all disabled:opacity-50"
+                  >
+                    {loading ? "Distributing..." : "Distribute Jackpot Rewards"}
+                  </button>
+                </div>
+              </section>
+
+              {/* Lottery Section */}
+              <section className="bg-gray-900 bg-opacity-80 p-6 rounded-lg neon-glow">
+                <h2 className="text-3xl font-bold text-center mb-6 bg-clip-text text-transparent bg-gradient-to-r from-red-500 to-pink-500">
+                  Lottery Lounge 🎟️
+                </h2>
+                <div className="space-y-4">
+                  <select
+                    value={lotteryType}
+                    onChange={(e) => setLotteryType(Number(e.target.value))}
+                    className="w-full p-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-cyan-500"
+                  >
+                    <option value={0}>Basic Lottery</option>
+                    <option value={1}>Pro Lottery</option>
+                    <option value={2}>Elite Lottery</option>
+                  </select>
+                  <input
+                    type="number"
+                    placeholder="Number of Entries"
+                    value={lotteryEntries}
+                    onChange={(e) => setLotteryEntries(e.target.value)}
+                    className="w-full p-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-cyan-500"
+                  />
+                  <button
+                    onClick={buyLotteryEntries}
+                    disabled={loading}
+                    className="w-full px-6 py-3 bg-gradient-to-r from-red-500 to-pink-500 rounded-lg text-white neon-glow hover:from-red-600 hover:to-pink-600 transition-all disabled:opacity-50"
+                  >
+                    {loading ? "Buying..." : "Buy Lottery Entries"}
+                  </button>
+                  <button
+                    onClick={distributeLotteryRewards}
+                    disabled={loading}
+                    className="w-full px-6 py-3 bg-gradient-to-r from-pink-500 to-red-500 rounded-lg text-white neon-glow hover:from-pink-600 hover:to-red-600 transition-all disabled:opacity-50"
+                  >
+                    {loading ? "Distributing..." : "Distribute Lottery Rewards"}
+                  </button>
+                </div>
+              </section>
+
+              {/* Star Vault Section */}
+              <section className="bg-gray-900 bg-opacity-80 p-6 rounded-lg neon-glow">
+                <h2 className="text-3xl font-bold text-center mb-6 bg-clip-text text-transparent bg-gradient-to-r from-cyan-500 to-green-500">
+                  Star Vault ✨
+                </h2>
+                <div className="space-y-4">
+                  <p className="text-center text-lg">Vault Balance: {vaultBalance} MATIC</p>
+                  <p className="text-center text-lg">Pending Profits: {vaultProfits} MATIC</p>
+                  <input
+                    type="number"
+                    placeholder="Amount to Deposit (MATIC)"
+                    value={vaultAmount}
+                    onChange={(e) => setVaultAmount(e.target.value)}
+                    className="w-full p-3 rounded-lg bg-gray-800 text-white border border-gray-700 focus:outline-none focus:border-cyan-500"
+                  />
+                  <button
+                    onClick={depositStarVault}
+                    disabled={loading}
+                    className="w-full px-6 py-3 bg-gradient-to-r from-cyan-500 to-green-500 rounded-lg text-white neon-glow hover:from-cyan-600 hover:to-green-600 transition-all disabled:opacity-50"
+                  >
+                    {loading ? "Depositing..." : "Deposit to Star Vault"}
+                  </button>
+                  <button
+                    onClick={withdrawStarVault}
+                    disabled={loading || vaultBalance === "0"}
+                    className="w-full px-6 py-3 bg-gradient-to-r from-green-500 to-cyan-500 rounded-lg text-white neon-glow hover:from-green-600 hover:to-cyan-600 transition-all disabled:opacity-50"
+                  >
+                    {loading ? "Withdrawing..." : "Withdraw from Star Vault"}
+                  </button>
+                </div>
+              </section>
+
+              {/* NFT Gallery */}
+              <section className="bg-gray-900 bg-opacity-80 p-6 rounded-lg neon-glow">
+                <h2 className="text-3xl font-bold text-center mb-6 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">
+                  Your NFT Collection 🖼️
+                </h2>
+                {nfts.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    {nfts.map((nft) => (
+                      <div key={nft.tokenId} className="bg-gray-800 rounded-lg p-4 neon-glow">
+                        <img
+                          src={nft.metadata.image.replace("ipfs://", "https://ipfs.io/ipfs/")}
+                          alt={nft.metadata.name}
+                          className="w-full h-48 object-cover rounded-lg mb-4"
+                        />
+                        <h3 className="text-xl font-bold">{nft.metadata.name}</h3>
+                        <p className="text-gray-400">{nft.metadata.description}</p>
+                        <p className="text-gray-300 mt-2">Token ID: {nft.tokenId}</p>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-center text-gray-400">No NFTs found. Mint some to get started!</p>
+                )}
+              </section>
+            </>
+          )}
+        </div>
+      );
+    };
+
+    ReactDOM.render(<App />, document.getElementById("root"));
+  </script>
+</body>
+</html>
